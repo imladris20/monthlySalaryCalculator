@@ -64,29 +64,132 @@ const INSURANCE_BRACKETS = [
 ];
 
 /**
+ * 115年最新！部分工時勞工級距表 (低於基本工資 29,500 元者)
+ * 勞保費率 12.5% (自付 20%, 雇主 70%)
+ * 健保費率 5.17% (自付 30%, 雇主 60% * 1.56 平均眷口數)
+ * 健保最低投保級距仍為 29,500 元
+ */
+const PART_TIME_INSURANCE_BRACKETS = [
+  { salary: 11100, employerLabor: 971, employerHealth: 1428, pension: 666, employerTotal: 3065, labor: 278, health: 458, total: 736 },
+  { salary: 12540, employerLabor: 1097, employerHealth: 1428, pension: 752, employerTotal: 3277, labor: 314, health: 458, total: 772 },
+  { salary: 13500, employerLabor: 1181, employerHealth: 1428, pension: 810, employerTotal: 3419, labor: 338, health: 458, total: 796 },
+  { salary: 15840, employerLabor: 1386, employerHealth: 1428, pension: 950, employerTotal: 3764, labor: 396, health: 458, total: 854 },
+  { salary: 16500, employerLabor: 1444, employerHealth: 1428, pension: 990, employerTotal: 3862, labor: 413, health: 458, total: 871 },
+  { salary: 17600, employerLabor: 1540, employerHealth: 1428, pension: 1056, employerTotal: 4024, labor: 440, health: 458, total: 898 },
+  { salary: 19200, employerLabor: 1680, employerHealth: 1428, pension: 1152, employerTotal: 4260, labor: 480, health: 458, total: 938 },
+  { salary: 20100, employerLabor: 1759, employerHealth: 1428, pension: 1206, employerTotal: 4393, labor: 503, health: 458, total: 961 },
+  { salary: 21000, employerLabor: 1838, employerHealth: 1428, pension: 1260, employerTotal: 4526, labor: 525, health: 458, total: 983 },
+  { salary: 22000, employerLabor: 1925, employerHealth: 1428, pension: 1320, employerTotal: 4673, labor: 550, health: 458, total: 1008 },
+  { salary: 23100, employerLabor: 2021, employerHealth: 1428, pension: 1386, employerTotal: 4835, labor: 578, health: 458, total: 1036 },
+  { salary: 24000, employerLabor: 2100, employerHealth: 1428, pension: 1440, employerTotal: 4968, labor: 600, health: 458, total: 1058 },
+  { salary: 25200, employerLabor: 2205, employerHealth: 1428, pension: 1512, employerTotal: 5145, labor: 630, health: 458, total: 1088 },
+  { salary: 26400, employerLabor: 2310, employerHealth: 1428, pension: 1584, employerTotal: 5322, labor: 660, health: 458, total: 1118 },
+  { salary: 27600, employerLabor: 2415, employerHealth: 1428, pension: 1656, employerTotal: 5499, labor: 690, health: 458, total: 1148 },
+  { salary: 28800, employerLabor: 2520, employerHealth: 1428, pension: 1728, employerTotal: 5676, labor: 720, health: 458, total: 1178 },
+];
+
+/**
  * 取得指定帳面薪資的勞健保扣除額
  * @param {number} nominalSalary 帳面薪資
+ * @param {boolean} isPartTime 是否為部分工時 (時薪制)
  * @returns {object} 包含該級距資訊的物件
  */
-function getInsuranceDeduction(nominalSalary) {
+function getInsuranceDeduction(nominalSalary, isPartTime = false) {
+  const brackets = isPartTime ? [...PART_TIME_INSURANCE_BRACKETS, ...INSURANCE_BRACKETS] : INSURANCE_BRACKETS;
+  
   // 預設最低級距
-  if (nominalSalary <= INSURANCE_BRACKETS[0].salary) {
-    return INSURANCE_BRACKETS[0];
+  if (nominalSalary <= brackets[0].salary) {
+    return brackets[0];
   }
 
   // 預設最高級距
   if (
-    nominalSalary >= INSURANCE_BRACKETS[INSURANCE_BRACKETS.length - 1].salary
+    nominalSalary >= brackets[brackets.length - 1].salary
   ) {
-    return INSURANCE_BRACKETS[INSURANCE_BRACKETS.length - 1];
+    return brackets[brackets.length - 1];
   }
 
   // 尋找符合的級距 (大於等於 nominalSalary 的最小級距)
-  for (let i = 0; i < INSURANCE_BRACKETS.length; i++) {
-    if (INSURANCE_BRACKETS[i].salary >= nominalSalary) {
-      return INSURANCE_BRACKETS[i];
+  for (let i = 0; i < brackets.length; i++) {
+    if (brackets[i].salary >= nominalSalary) {
+      return brackets[i];
     }
   }
 
-  return INSURANCE_BRACKETS[INSURANCE_BRACKETS.length - 1];
+  return brackets[brackets.length - 1];
+}
+
+/**
+ * 在級距表中高亮顯示指定的級距
+ * @param {number} bracketSalary 
+ */
+function highlightBracketInTable(bracketSalary) {
+  const tbody = document.getElementById("bracket_tbody");
+  if (!tbody) return;
+  const rows = tbody.querySelectorAll("tr");
+  rows.forEach((row) => {
+    // reset background
+    row.classList.remove("bg-warning/20", "font-bold");
+    row
+      .querySelectorAll("td")
+      .forEach((td) =>
+        td.classList.remove(
+          "bg-warning/50",
+          "font-black",
+          "text-warning-content",
+        ),
+      );
+
+    const rowSalaryStr = row.cells[0].textContent.replace(/,/g, "");
+    const rowSalary = parseInt(rowSalaryStr, 10);
+
+    if (rowSalary === bracketSalary) {
+      row.classList.add("bg-warning/20", "font-bold");
+      // Highlight specific columns: 勞退(idx 3), 勞保自付(idx 5), 健保自付(idx 6), 合計自付(idx 7)
+      if (row.cells.length >= 8) {
+        [3, 5, 6, 7].forEach((idx) => {
+          row.cells[idx].classList.add(
+            "bg-warning/50",
+            "font-black",
+            "text-warning-content",
+          );
+        });
+      }
+    }
+  });
+}
+
+// Ensure it's available globally for the HTML onclick handler
+window.scrollToHighlightedRow = function () {
+  setTimeout(() => {
+    // Need to escape the forward slash in CSS selectors
+    const highlighted = document.querySelector(
+      "#bracket_tbody tr.bg-warning\\\\/20",
+    );
+    if (highlighted) {
+      highlighted.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  }, 100);
+};
+
+/**
+ * 動態渲染級距表內容
+ * @param {Array} brackets 級距資料陣列
+ */
+function renderInsuranceTable(brackets) {
+  const tbody = document.getElementById("bracket_tbody");
+  if (!tbody || !brackets) return;
+
+  tbody.innerHTML = brackets.map((b) => `
+    <tr>
+      <td>${b.salary.toLocaleString()}</td>
+      <td>${b.employerLabor.toLocaleString()}</td>
+      <td>${b.employerHealth.toLocaleString()}</td>
+      <td>${b.pension.toLocaleString()}</td>
+      <td>${b.employerTotal.toLocaleString()}</td>
+      <td>${b.labor.toLocaleString()}</td>
+      <td>${b.health.toLocaleString()}</td>
+      <td>${b.total.toLocaleString()}</td>
+    </tr>
+  `).join("");
 }

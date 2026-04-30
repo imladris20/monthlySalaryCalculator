@@ -1,42 +1,48 @@
 document.addEventListener("DOMContentLoaded", () => {
   // 設定目前的計算模式
-  localStorage.setItem('calculatorMode', 'monthly');
+  localStorage.setItem('calculatorMode', 'hourly');
 
-  // 動態渲染級距表 (預設月薪制)
-  renderInsuranceTable(INSURANCE_BRACKETS);
-
+  // 動態渲染級距表 (部分工時 + 一般級距)
+  const allBrackets = [...PART_TIME_INSURANCE_BRACKETS, ...INSURANCE_BRACKETS];
+  renderInsuranceTable(allBrackets);
 
   const form = document.getElementById("calculator-form");
   const resultSection = document.getElementById("result-section");
-  const overtimePayExactEl = document.getElementById("overtime-pay-exact");
   const insuranceDeductionEl = document.getElementById("insurance-deduction");
   const netSalaryRoundedEl = document.getElementById("net-salary-rounded");
   const employerPensionEl = document.getElementById("employer-pension");
+  const grossSalaryEl = document.getElementById("gross-salary");
+  
+  const hourlyWageInput = document.getElementById("hourly-wage");
+  const totalHoursInput = document.getElementById("total-hours");
+  const salaryInsurancePreview = document.getElementById("salary-insurance-preview");
   const recordsContainer = document.getElementById("records-container");
   const addRecordBtn = document.getElementById("add-record-btn");
-  const monthlySalaryInput = document.getElementById("monthly-salary");
-  const salaryInsurancePreview = document.getElementById(
-    "salary-insurance-preview",
-  );
+  const overtimePayExactEl = document.getElementById("overtime-pay-exact");
 
-  // 即時預覽勞健保扣除額
-  monthlySalaryInput.addEventListener("input", (e) => {
-    const salary = parseFloat(e.target.value);
-    if (isNaN(salary) || salary <= 0) {
+  function updatePreview() {
+    const hourlyWage = parseFloat(hourlyWageInput.value);
+    const totalHours = parseFloat(totalHoursInput.value);
+    
+    if (isNaN(hourlyWage) || isNaN(totalHours) || hourlyWage <= 0 || totalHours <= 0) {
       salaryInsurancePreview.textContent = "";
       return;
     }
-    const hourlyWage = (salary / 240).toFixed(1);
-    const bracketInfo = getInsuranceDeduction(salary);
+
+    const estimatedSalary = hourlyWage * totalHours;
+    const bracketInfo = getInsuranceDeduction(estimatedSalary, true);
+    
     salaryInsurancePreview.innerHTML = `
-      <div class="mb-1">平日時薪: $${hourlyWage}元</div>
+      <div class="mb-1 text-primary font-bold">預估月薪 (不含加班): $${Math.round(estimatedSalary).toLocaleString()}元</div>
       <div class="mb-1">對應級距: $${bracketInfo.salary.toLocaleString()}</div>
       <div>勞保自付: $${bracketInfo.labor.toLocaleString()}，健保自付: $${bracketInfo.health.toLocaleString()}，雇主提撥勞退: $${bracketInfo.pension.toLocaleString()}</div>
     `;
 
-    // Highlight the bracket in the modal table
     highlightBracketInTable(bracketInfo.salary);
-  });
+  }
+
+  hourlyWageInput.addEventListener("input", updatePreview);
+  totalHoursInput.addEventListener("input", updatePreview);
 
   // 動態新增列
   addRecordBtn.addEventListener("click", () => {
@@ -63,7 +69,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function updateDeleteButtons() {
     const deleteBtns = recordsContainer.querySelectorAll(".delete-btn");
-    // 如果只剩一列，則禁用刪除按鈕
     if (deleteBtns.length <= 1) {
       deleteBtns.forEach((btn) => (btn.disabled = true));
     } else {
@@ -74,21 +79,23 @@ document.addEventListener("DOMContentLoaded", () => {
   form.addEventListener("submit", (e) => {
     e.preventDefault();
 
-    const salary = parseFloat(document.getElementById("monthly-salary").value);
-    if (isNaN(salary)) return;
+    const hourlyWage = parseFloat(hourlyWageInput.value);
+    const totalHours = parseFloat(totalHoursInput.value);
+    
+    if (isNaN(hourlyWage) || isNaN(totalHours)) return;
 
-    // 計算平日每小時工資 (月薪 / 240)
-    const hourlyWage = salary / 240;
+    // 基本薪資 (不含加班)
+    const baseSalary = hourlyWage * totalHours;
+    
+    // 計算加班費
     const tier1RatePerMin = (hourlyWage * (4 / 3)) / 60;
     const tier2RatePerMin = (hourlyWage * (5 / 3)) / 60;
 
-    let totalExactPay = 0;
+    let totalOvertimePay = 0;
     let totalTier1Mins = 0;
     let totalTier2Mins = 0;
 
-    // 取得所有分鐘數輸入框
     const minuteInputs = recordsContainer.querySelectorAll(".overtime-minutes");
-
     minuteInputs.forEach((input) => {
       const minutes = parseInt(input.value, 10);
       if (isNaN(minutes) || minutes <= 0) return;
@@ -101,40 +108,29 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
 
-    totalExactPay =
-      totalTier1Mins * tier1RatePerMin + totalTier2Mins * tier2RatePerMin;
+    totalOvertimePay = totalTier1Mins * tier1RatePerMin + totalTier2Mins * tier2RatePerMin;
 
-    // 取得勞健保扣除額
-    const bracketInfo = getInsuranceDeduction(salary, false);
+    const grossSalaryTotal = Math.round(baseSalary + totalOvertimePay);
+    const bracketInfo = getInsuranceDeduction(grossSalaryTotal, true);
     const deduction = bracketInfo.total;
+    const netSalary = grossSalaryTotal - deduction;
 
-    // 計算最終實領薪資
-    const netSalary = salary - deduction + Math.round(totalExactPay);
-
-    // 顯示勞健保扣除額
+    // 顯示數值
     insuranceDeductionEl.textContent = `- NT$ ${deduction.toLocaleString()}`;
-
-    // 顯示精確的小數加班費結果
-    overtimePayExactEl.textContent = `+ NT$ ${totalExactPay.toFixed(2)}`;
+    overtimePayExactEl.textContent = `+ NT$ ${totalOvertimePay.toFixed(2)}`;
+    
     document.getElementById("overtime-tier1-desc").textContent =
       `1~120分: 每分鐘 $${tier1RatePerMin.toFixed(2)} (共 ${totalTier1Mins} 分鐘)`;
     document.getElementById("overtime-tier2-desc").textContent =
       `121~240分: 每分鐘 $${tier2RatePerMin.toFixed(2)} (共 ${totalTier2Mins} 分鐘)`;
 
-    // 顯示最終實領薪資
     netSalaryRoundedEl.textContent = `NT$ ${netSalary.toLocaleString()}`;
-
-    // 顯示雇主提撥勞退
     employerPensionEl.textContent = `NT$ ${bracketInfo.pension.toLocaleString()}`;
 
     // 顯示結果區塊
     resultSection.classList.remove("hidden");
-
-    // 重新觸發淡入動畫
     resultSection.classList.remove("animate-fade-in");
-    void resultSection.offsetWidth; // 觸發重繪 (reflow)
+    void resultSection.offsetWidth;
     resultSection.classList.add("animate-fade-in");
   });
 });
-
-

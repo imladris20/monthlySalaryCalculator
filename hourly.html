@@ -3,9 +3,9 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>實領月薪計算機</title>
+    <title>實領時薪計算機</title>
 
-    <!-- 引入 DaisyUI (必須在 Tailwind 之前) -->
+    <!-- 引入 DaisyUI -->
     <link
       href="https://cdn.jsdelivr.net/npm/daisyui@latest/daisyui.css"
       rel="stylesheet"
@@ -19,14 +19,15 @@
     <!-- 引入 Tailwind CSS v4 Browser CDN -->
     <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
 
-    <!-- 自訂樣式 (如有需要) -->
+    <!-- 自訂樣式 -->
     <link href="style.css" rel="stylesheet" />
     <script>
       // 檢查使用者偏好模式
       const mode = localStorage.getItem('calculatorMode');
-      if (mode === 'hourly' && !window.location.href.includes('hourly.html')) {
-        window.location.href = 'hourly.html';
+      if (mode === 'monthly' && !window.location.href.includes('index.html')) {
+        // 只有在不是明確點擊過來的情況下才跳轉，這裡簡單處理
       }
+      localStorage.setItem('calculatorMode', 'hourly');
     </script>
   </head>
   <body
@@ -37,8 +38,8 @@
     >
       <!-- 導航標籤 -->
       <div class="tabs tabs-boxed rounded-b-none bg-base-300/50">
-        <a class="tab tab-active flex-1 font-bold">月薪制勞工</a>
-        <a href="hourly.html" class="tab flex-1" onclick="localStorage.setItem('calculatorMode', 'hourly')">時薪制勞工</a>
+        <a href="index.html" class="tab flex-1" onclick="localStorage.setItem('calculatorMode', 'monthly')">月薪制勞工</a>
+        <a class="tab tab-active flex-1 font-bold">時薪制勞工</a>
       </div>
 
       <div class="card-body">
@@ -59,14 +60,14 @@
               d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
             />
           </svg>
-          實領薪資計算機
+          實領薪資計算機 (時薪制)
         </h2>
 
         <form id="calculator-form" class="space-y-4">
-          <!-- 月薪輸入 -->
+          <!-- 時薪輸入 -->
           <div class="form-control">
             <label class="label">
-              <span class="label-text font-medium">月薪 (新台幣)</span>
+              <span class="label-text font-medium">時薪 (新台幣)</span>
             </label>
             <label
               class="input input-bordered flex items-center gap-2 focus-within:outline-primary"
@@ -74,18 +75,40 @@
               $
               <input
                 type="number"
-                id="monthly-salary"
+                id="hourly-wage"
                 class="grow"
-                placeholder="例如: 40000"
+                placeholder="例如: 196"
+                required
+                min="196"
+                value="196"
+              />
+            </label>
+          </div>
+
+          <!-- 工時輸入 -->
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text font-medium">本月總排班小時數</span>
+            </label>
+            <label
+              class="input input-bordered flex items-center gap-2 focus-within:outline-primary"
+            >
+              <input
+                type="number"
+                id="total-hours"
+                class="grow"
+                placeholder="例如: 160"
                 required
                 min="1"
               />
+              <span class="text-base-content/50">小時</span>
             </label>
-            <div
-              id="salary-insurance-preview"
-              class="text-xs text-base-content/60 mt-2 min-h-[1rem]"
-            ></div>
           </div>
+
+          <div
+            id="salary-insurance-preview"
+            class="text-xs text-base-content/60 mt-2 min-h-[1rem]"
+          ></div>
 
           <!-- 加班紀錄列表 -->
           <div class="form-control">
@@ -217,7 +240,7 @@
             </div>
             <div class="w-full text-success-content">
               <div class="text-xs sm:text-sm opacity-80 mt-1">
-                公式：帳面薪資 - 扣除額 + 加班費
+                公式：帳面薪資 - 勞健保扣除額
               </div>
               <div
                 class="text-4xl sm:text-5xl font-black mt-2 tracking-tight"
@@ -256,7 +279,7 @@
                 NT$ 0
               </div>
               <div class="text-xs opacity-80 mt-1" id="employer-pension-desc">
-                這筆錢會由雇主全額負擔並存入您的勞退個人專戶，不包含在上方實領薪資內。
+                這筆錢由雇主全額負擔，不包含在實領薪資內。
               </div>
             </div>
           </div>
@@ -273,7 +296,7 @@
     <dialog id="bracket_modal" class="modal">
       <div class="modal-box w-11/12 max-w-5xl">
         <h3 class="font-bold text-lg mb-4">
-          2026年勞保、健保、勞退級距及保費級距一覽表
+          2026年勞保、健保、勞退級距及保費級距一覽表 (部分工時)
         </h3>
         <div class="overflow-x-auto h-96">
           <table id="bracket_table" class="table table-xs">
@@ -310,6 +333,6 @@
     </dialog>
 
     <script src="insuranceData.js"></script>
-    <script src="script.js"></script>
+    <script src="hourlyScript.js"></script>
   </body>
 </html>
