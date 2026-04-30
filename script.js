@@ -7,6 +7,21 @@ document.addEventListener("DOMContentLoaded", () => {
   const netSalaryRoundedEl = document.getElementById("net-salary-rounded");
   const recordsContainer = document.getElementById("records-container");
   const addRecordBtn = document.getElementById("add-record-btn");
+  const monthlySalaryInput = document.getElementById("monthly-salary");
+  const salaryInsurancePreview = document.getElementById(
+    "salary-insurance-preview",
+  );
+
+  // 即時預覽勞健保扣除額
+  monthlySalaryInput.addEventListener("input", (e) => {
+    const salary = parseFloat(e.target.value);
+    if (isNaN(salary) || salary <= 0) {
+      salaryInsurancePreview.textContent = "";
+      return;
+    }
+    const bracketInfo = getInsuranceDeduction(salary);
+    salaryInsurancePreview.textContent = `對應級距: $${bracketInfo.salary.toLocaleString()} | 勞保自付: $${bracketInfo.labor.toLocaleString()} | 健保自付: $${bracketInfo.health.toLocaleString()}`;
+  });
 
   // 動態新增列
   addRecordBtn.addEventListener("click", () => {
