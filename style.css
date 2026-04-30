@@ -15,3 +15,15 @@
 }
 
 /* Optional: Additional small overrides can go here */
+#bracket_table thead th {
+  position: sticky;
+  z-index: 10;
+}
+#bracket_table thead tr:first-child th {
+  top: 0;
+  box-shadow: 0 1px 0 0 var(--fallback-b2, oklch(var(--b2)));
+}
+#bracket_table thead tr:last-child th {
+  top: 28px;
+  box-shadow: 0 1px 0 0 var(--fallback-b2, oklch(var(--b2)));
+}

@@ -145,7 +145,7 @@
               <div class="stat-desc text-xs mt-1" id="insurance-desc">
                 依<a
                   href="#"
-                  onclick="bracket_modal.showModal()"
+                  onclick="bracket_modal.showModal(); scrollToHighlightedRow();"
                   class="link link-primary"
                   >級距表</a
                 >扣除
@@ -247,7 +247,7 @@
           勞保、健保、勞退級距及保費級距一覽表
         </h3>
         <div class="overflow-x-auto h-96">
-          <table class="table table-xs table-pin-rows">
+          <table id="bracket_table" class="table table-xs">
             <thead>
               <tr>
                 <th rowspan="2">投保級距</th>
@@ -264,7 +264,7 @@
                 <th class="bg-base-300">合計</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody id="bracket_tbody">
               <tr>
                 <td>29,500</td>
                 <td>2,581</td>
