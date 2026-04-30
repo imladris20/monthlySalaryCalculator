@@ -21,8 +21,12 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     const hourlyWage = Math.round(salary / 240);
     const bracketInfo = getInsuranceDeduction(salary);
-    salaryInsurancePreview.textContent = `平日時薪: $${hourlyWage} | 對應級距: $${bracketInfo.salary.toLocaleString()} | 勞保自付: $${bracketInfo.labor.toLocaleString()} | 健保自付: $${bracketInfo.health.toLocaleString()} | 雇主提撥勞退: $${bracketInfo.pension.toLocaleString()}`;
-    
+    salaryInsurancePreview.innerHTML = `
+      <div class="mb-1">平日時薪: $${hourlyWage}</div>
+      <div class="mb-1">對應級距: $${bracketInfo.salary.toLocaleString()}</div>
+      <div>勞保自付: $${bracketInfo.labor.toLocaleString()} | 健保自付: $${bracketInfo.health.toLocaleString()} | 雇主提撥勞退: $${bracketInfo.pension.toLocaleString()}</div>
+    `;
+
     // Highlight the bracket in the modal table
     highlightBracketInTable(bracketInfo.salary);
   });
@@ -133,17 +137,29 @@ function highlightBracketInTable(bracketSalary) {
   rows.forEach((row) => {
     // reset background
     row.classList.remove("bg-warning/20", "font-bold");
-    row.querySelectorAll("td").forEach((td) => td.classList.remove("bg-warning/50", "font-black", "text-warning-content"));
+    row
+      .querySelectorAll("td")
+      .forEach((td) =>
+        td.classList.remove(
+          "bg-warning/50",
+          "font-black",
+          "text-warning-content",
+        ),
+      );
 
     const rowSalaryStr = row.cells[0].textContent.replace(/,/g, "");
     const rowSalary = parseInt(rowSalaryStr, 10);
-    
+
     if (rowSalary === bracketSalary) {
       row.classList.add("bg-warning/20", "font-bold");
       // Highlight specific columns: 勞退(idx 3), 勞保自付(idx 5), 健保自付(idx 6), 合計自付(idx 7)
       if (row.cells.length >= 8) {
-        [3, 5, 6, 7].forEach(idx => {
-          row.cells[idx].classList.add("bg-warning/50", "font-black", "text-warning-content");
+        [3, 5, 6, 7].forEach((idx) => {
+          row.cells[idx].classList.add(
+            "bg-warning/50",
+            "font-black",
+            "text-warning-content",
+          );
         });
       }
     }
@@ -154,7 +170,9 @@ function highlightBracketInTable(bracketSalary) {
 window.scrollToHighlightedRow = function () {
   setTimeout(() => {
     // Need to escape the forward slash in CSS selectors
-    const highlighted = document.querySelector("#bracket_tbody tr.bg-warning\\\\/20");
+    const highlighted = document.querySelector(
+      "#bracket_tbody tr.bg-warning\\\\/20",
+    );
     if (highlighted) {
       highlighted.scrollIntoView({ behavior: "smooth", block: "center" });
     }
