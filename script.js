@@ -19,12 +19,12 @@ document.addEventListener("DOMContentLoaded", () => {
       salaryInsurancePreview.textContent = "";
       return;
     }
-    const hourlyWage = Math.round(salary / 240);
+    const hourlyWage = (salary / 240).toFixed(1);
     const bracketInfo = getInsuranceDeduction(salary);
     salaryInsurancePreview.innerHTML = `
-      <div class="mb-1">平日時薪: $${hourlyWage}</div>
+      <div class="mb-1">平日時薪: $${hourlyWage}元</div>
       <div class="mb-1">對應級距: $${bracketInfo.salary.toLocaleString()}</div>
-      <div>勞保自付: $${bracketInfo.labor.toLocaleString()} | 健保自付: $${bracketInfo.health.toLocaleString()} | 雇主提撥勞退: $${bracketInfo.pension.toLocaleString()}</div>
+      <div>勞保自付: $${bracketInfo.labor.toLocaleString()}，健保自付: $${bracketInfo.health.toLocaleString()}，雇主提撥勞退: $${bracketInfo.pension.toLocaleString()}</div>
     `;
 
     // Highlight the bracket in the modal table
