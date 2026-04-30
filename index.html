@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="zh-TW" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>加班費試算工具</title>
+    
+    <!-- 引入 DaisyUI (必須在 Tailwind 之前) -->
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@latest/daisyui.css" rel="stylesheet" type="text/css" />
+    <!-- 引入 Tailwind CSS v4 Browser CDN -->
+    <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+    
+    <!-- 自訂樣式 (如有需要) -->
+    <link href="style.css" rel="stylesheet">
+</head>
+<body class="min-h-screen bg-base-200 flex items-center justify-center p-4 md:p-8 font-sans transition-colors duration-300">
+    
+    <div class="card w-full max-w-lg bg-base-100 shadow-xl border border-base-300">
+        <div class="card-body">
+            <h2 class="card-title text-2xl font-bold mb-6 text-primary flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                加班費試算工具
+            </h2>
+            
+            <form id="calculator-form" class="space-y-4">
+                
+                <!-- 月薪輸入 -->
+                <div class="form-control">
+                    <label class="label">
+                        <span class="label-text font-medium">月薪 (新台幣)</span>
+                    </label>
+                    <label class="input input-bordered flex items-center gap-2 focus-within:outline-primary">
+                        $
+                        <input type="number" id="monthly-salary" class="grow" placeholder="例如: 40000" required min="1" />
+                    </label>
+                </div>
+
+                <!-- 加班類型 -->
+                <div class="form-control">
+                    <label class="label">
+                        <span class="label-text font-medium">加班日類型</span>
+                    </label>
+                    <select id="overtime-type" class="select select-bordered w-full focus:outline-primary">
+                        <option value="normal" selected>平日 (工作日) 加班</option>
+                        <option value="rest">休息日 加班</option>
+                        <option value="holiday">國定假日/例假日 加班</option>
+                    </select>
+                </div>
+
+                <!-- 加班時數 -->
+                <div class="form-control">
+                    <label class="label">
+                        <span class="label-text font-medium">加班時數 (小時)</span>
+                    </label>
+                    <input type="number" id="overtime-hours" class="input input-bordered w-full focus:outline-primary" placeholder="例如: 2" step="0.5" required min="0.5" />
+                </div>
+
+                <div class="card-actions mt-6">
+                    <button type="submit" class="btn btn-primary w-full text-lg">開始計算</button>
+                </div>
+            </form>
+
+            <div class="divider my-6">計算結果</div>
+
+            <!-- 結果顯示區塊 -->
+            <div id="result-section" class="hidden space-y-4 animate-fade-in">
+                <div class="stats shadow w-full bg-base-200">
+                    <div class="stat place-items-center">
+                        <div class="stat-title text-base-content/70">換算平日時薪</div>
+                        <div class="stat-value text-2xl" id="hourly-wage">0</div>
+                        <div class="stat-desc">月薪 / 240小時</div>
+                    </div>
+                </div>
+
+                <div class="alert alert-success shadow-lg mt-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    <div>
+                        <h3 class="font-bold text-lg">預估加班費</h3>
+                        <div class="text-3xl font-black mt-1" id="overtime-pay">NT$ 0</div>
+                    </div>
+                </div>
+                
+                <p class="text-xs text-base-content/60 text-center mt-4">
+                    * 計算結果僅供參考，實際薪資發放依各公司計算方式及最新勞基法規定為準。
+                </p>
+            </div>
+            
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
