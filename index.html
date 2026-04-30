@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>加班費試算工具</title>
+    <title>實領薪資計算機</title>
 
     <!-- 引入 DaisyUI (必須在 Tailwind 之前) -->
     <link
@@ -41,7 +41,7 @@
               d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
             />
           </svg>
-          加班費試算工具
+          實領薪資計算機
         </h2>
 
         <form id="calculator-form" class="space-y-4">
@@ -136,13 +136,39 @@
             </div>
           </div>
 
+          <!-- 扣除額與加班費細項 -->
+          <div class="stats shadow w-full bg-base-200 mt-2">
+            <div class="stat place-items-center">
+              <div class="stat-title text-base-content/70">勞健保扣除額</div>
+              <div
+                class="stat-value text-xl text-error"
+                id="insurance-deduction"
+              >
+                - NT$ 0
+              </div>
+              <div class="stat-desc text-xs mt-1" id="insurance-desc">
+                依級距表扣除
+              </div>
+            </div>
+            <div class="stat place-items-center">
+              <div class="stat-title text-base-content/70">總加班費</div>
+              <div
+                class="stat-value text-xl text-success"
+                id="overtime-pay-exact"
+              >
+                + NT$ 0.00
+              </div>
+            </div>
+          </div>
+
+          <!-- 最終實領薪資 -->
           <div
-            class="alert alert-success shadow-lg mt-4 flex-col items-start gap-1"
+            class="alert alert-success shadow-lg mt-4 flex-col items-start gap-1 bg-gradient-to-r from-success/20 to-success/40 border-none"
           >
             <div class="flex items-center gap-2">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
-                class="stroke-current shrink-0 h-6 w-6"
+                class="stroke-current shrink-0 h-6 w-6 text-success-content"
                 fill="none"
                 viewBox="0 0 24 24"
               >
@@ -153,23 +179,18 @@
                   d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
                 />
               </svg>
-              <h3 class="font-bold text-lg">預估加班費</h3>
+              <h3 class="font-bold text-lg text-success-content">
+                最終實領薪資
+              </h3>
             </div>
-            <div class="w-full">
-              <div class="text-sm text-base-content/80 mt-2">
-                精確計算金額：
+            <div class="w-full text-success-content">
+              <div class="text-sm opacity-80 mt-1">
+                公式：帳面薪資 - 扣除額 + 加班費
               </div>
               <div
-                class="text-xl font-medium text-base-content/90"
-                id="overtime-pay-exact"
+                class="text-5xl font-black mt-2 tracking-tight"
+                id="net-salary-rounded"
               >
-                NT$ 0.00
-              </div>
-
-              <div class="text-sm text-base-content/80 mt-4">
-                四捨五入實領金額：
-              </div>
-              <div class="text-4xl font-black mt-1" id="overtime-pay-rounded">
                 NT$ 0
               </div>
             </div>
@@ -183,6 +204,7 @@
       </div>
     </div>
 
+    <script src="insuranceData.js"></script>
     <script src="script.js"></script>
   </body>
 </html>

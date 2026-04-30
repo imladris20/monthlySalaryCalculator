@@ -3,7 +3,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const resultSection = document.getElementById("result-section");
   const hourlyWageEl = document.getElementById("hourly-wage");
   const overtimePayExactEl = document.getElementById("overtime-pay-exact");
-  const overtimePayRoundedEl = document.getElementById("overtime-pay-rounded");
+  const insuranceDeductionEl = document.getElementById("insurance-deduction");
+  const netSalaryRoundedEl = document.getElementById("net-salary-rounded");
   const recordsContainer = document.getElementById("records-container");
   const addRecordBtn = document.getElementById("add-record-btn");
 
@@ -71,14 +72,24 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
 
+    // 取得勞健保扣除額
+    const bracketInfo = getInsuranceDeduction(salary);
+    const deduction = bracketInfo.total;
+
+    // 計算最終實領薪資
+    const netSalary = salary - deduction + Math.round(totalExactPay);
+
     // 顯示結果
     hourlyWageEl.textContent = `NT$ ${Math.round(hourlyWage)}`;
 
-    // 顯示精確的小數結果
-    overtimePayExactEl.textContent = `NT$ ${totalExactPay.toFixed(2)}`;
+    // 顯示勞健保扣除額
+    insuranceDeductionEl.textContent = `- NT$ ${deduction.toLocaleString()}`;
 
-    // 顯示四捨五入的結果
-    overtimePayRoundedEl.textContent = `NT$ ${Math.round(totalExactPay).toLocaleString()}`;
+    // 顯示精確的小數加班費結果
+    overtimePayExactEl.textContent = `+ NT$ ${totalExactPay.toFixed(2)}`;
+
+    // 顯示最終實領薪資
+    netSalaryRoundedEl.textContent = `NT$ ${netSalary.toLocaleString()}`;
 
     // 顯示結果區塊
     resultSection.classList.remove("hidden");
