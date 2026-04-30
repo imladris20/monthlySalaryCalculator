@@ -3,6 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="favicon.ico" type="image/x-icon" />
     <title>實領月薪計算機（月薪制）</title>
 
     <!-- 引入 DaisyUI (必須在 Tailwind 之前) -->
@@ -64,7 +65,7 @@
               d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
             />
           </svg>
-          實領薪資計算機
+          實領薪資計算機（月薪制）
         </h2>
 
         <div class="flex flex-col lg:flex-row gap-0 lg:gap-4">
@@ -212,7 +213,7 @@
               </div>
             </div>
 
-            <!-- 最終實領薪資 -->
+            <!-- 本月最終實領薪資 -->
             <div
               class="alert alert-success shadow-lg flex flex-col items-start gap-1 bg-gradient-to-r from-success/20 to-success/40 border-none p-4 sm:p-6"
             >
@@ -231,7 +232,7 @@
                   />
                 </svg>
                 <h3 class="font-bold text-base sm:text-lg text-success-content">
-                  最終實領薪資
+                  本月最終實領薪資
                 </h3>
               </div>
               <div class="w-full text-success-content">
@@ -266,7 +267,7 @@
                   ></path>
                 </svg>
                 <h3 class="font-bold text-base sm:text-lg">
-                  雇主提撥勞退 (6%)
+                  本月雇主提撥勞退 (6%)
                 </h3>
               </div>
               <div class="w-full">
@@ -276,12 +277,12 @@
                 >
                   NT$ 0
                 </div>
-                <div class="text-xs opacity-80 mt-1" id="employer-pension-desc">
+                <div class="text-[11px] opacity-80" id="employer-pension-desc">
                   勞退是由雇主全額負擔、另外提撥您的勞退級距 6%
                   的額度並存入您的勞退個人專戶，在退休時可以領出。
                 </div>
-                <div class="text-xs opacity-80 mt-1">
-                  因此，這筆錢算是您的收入，雖然並非實領薪資，但也不會從您的薪資中扣除。
+                <div class="text-[11px] opacity-80">
+                  因此，這筆錢算是您的收入，雖並非實領薪資，但也不會從您的薪資中扣除。
                 </div>
               </div>
             </div>
