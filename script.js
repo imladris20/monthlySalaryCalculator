@@ -5,6 +5,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const overtimePayExactEl = document.getElementById("overtime-pay-exact");
   const insuranceDeductionEl = document.getElementById("insurance-deduction");
   const netSalaryRoundedEl = document.getElementById("net-salary-rounded");
+  const employerPensionEl = document.getElementById("employer-pension");
   const recordsContainer = document.getElementById("records-container");
   const addRecordBtn = document.getElementById("add-record-btn");
   const monthlySalaryInput = document.getElementById("monthly-salary");
@@ -20,7 +21,7 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
     const bracketInfo = getInsuranceDeduction(salary);
-    salaryInsurancePreview.textContent = `對應級距: $${bracketInfo.salary.toLocaleString()} | 勞保自付: $${bracketInfo.labor.toLocaleString()} | 健保自付: $${bracketInfo.health.toLocaleString()}`;
+    salaryInsurancePreview.textContent = `對應級距: $${bracketInfo.salary.toLocaleString()} | 勞保自付: $${bracketInfo.labor.toLocaleString()} | 健保自付: $${bracketInfo.health.toLocaleString()} | 雇主提撥勞退: $${bracketInfo.pension.toLocaleString()}`;
   });
 
   // 動態新增列
@@ -105,6 +106,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // 顯示最終實領薪資
     netSalaryRoundedEl.textContent = `NT$ ${netSalary.toLocaleString()}`;
+
+    // 顯示雇主提撥勞退
+    employerPensionEl.textContent = `NT$ ${bracketInfo.pension.toLocaleString()}`;
 
     // 顯示結果區塊
     resultSection.classList.remove("hidden");
