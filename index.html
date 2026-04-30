@@ -132,14 +132,6 @@
 
         <!-- 結果顯示區塊 -->
         <div id="result-section" class="hidden space-y-4 animate-fade-in">
-          <div class="stats shadow w-full bg-base-200">
-            <div class="stat place-items-center">
-              <div class="stat-title text-base-content/70">換算平日時薪</div>
-              <div class="stat-value text-2xl" id="hourly-wage">0</div>
-              <div class="stat-desc">月薪 / 240小時</div>
-            </div>
-          </div>
-
           <!-- 扣除額與加班費細項 -->
           <div class="stats shadow w-full bg-base-200 mt-2">
             <div class="stat place-items-center">
@@ -162,6 +154,11 @@
               >
                 + NT$ 0.00
               </div>
+              <div
+                class="stat-desc text-xs mt-1"
+                id="overtime-tier1-desc"
+              ></div>
+              <div class="stat-desc text-xs" id="overtime-tier2-desc"></div>
             </div>
           </div>
 

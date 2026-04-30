@@ -1,7 +1,6 @@
 document.addEventListener("DOMContentLoaded", () => {
   const form = document.getElementById("calculator-form");
   const resultSection = document.getElementById("result-section");
-  const hourlyWageEl = document.getElementById("hourly-wage");
   const overtimePayExactEl = document.getElementById("overtime-pay-exact");
   const insuranceDeductionEl = document.getElementById("insurance-deduction");
   const netSalaryRoundedEl = document.getElementById("net-salary-rounded");
@@ -20,8 +19,9 @@ document.addEventListener("DOMContentLoaded", () => {
       salaryInsurancePreview.textContent = "";
       return;
     }
+    const hourlyWage = Math.round(salary / 240);
     const bracketInfo = getInsuranceDeduction(salary);
-    salaryInsurancePreview.textContent = `對應級距: $${bracketInfo.salary.toLocaleString()} | 勞保自付: $${bracketInfo.labor.toLocaleString()} | 健保自付: $${bracketInfo.health.toLocaleString()} | 雇主提撥勞退: $${bracketInfo.pension.toLocaleString()}`;
+    salaryInsurancePreview.textContent = `平日時薪: $${hourlyWage} | 對應級距: $${bracketInfo.salary.toLocaleString()} | 勞保自付: $${bracketInfo.labor.toLocaleString()} | 健保自付: $${bracketInfo.health.toLocaleString()} | 雇主提撥勞退: $${bracketInfo.pension.toLocaleString()}`;
   });
 
   // 動態新增列
@@ -65,8 +65,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // 計算平日每小時工資 (月薪 / 240)
     const hourlyWage = salary / 240;
+    const tier1RatePerMin = (hourlyWage * (4 / 3)) / 60;
+    const tier2RatePerMin = (hourlyWage * (5 / 3)) / 60;
 
     let totalExactPay = 0;
+    let totalTier1Mins = 0;
+    let totalTier2Mins = 0;
 
     // 取得所有分鐘數輸入框
     const minuteInputs = recordsContainer.querySelectorAll(".overtime-minutes");
@@ -75,18 +79,16 @@ document.addEventListener("DOMContentLoaded", () => {
       const minutes = parseInt(input.value, 10);
       if (isNaN(minutes) || minutes <= 0) return;
 
-      // 第1~120分鐘的加班費：時薪 * 4/3 * (分鐘數 / 60)
-      // 第121~240分鐘的加班費：時薪 * 5/3 * (分鐘數 / 60)
       if (minutes <= 120) {
-        totalExactPay += hourlyWage * (4 / 3) * (minutes / 60);
+        totalTier1Mins += minutes;
       } else {
-        // 前 120 分鐘
-        const firstTierPay = hourlyWage * (4 / 3) * (120 / 60);
-        // 121 ~ 240 分鐘
-        const secondTierPay = hourlyWage * (5 / 3) * ((minutes - 120) / 60);
-        totalExactPay += firstTierPay + secondTierPay;
+        totalTier1Mins += 120;
+        totalTier2Mins += minutes - 120;
       }
     });
+
+    totalExactPay =
+      totalTier1Mins * tier1RatePerMin + totalTier2Mins * tier2RatePerMin;
 
     // 取得勞健保扣除額
     const bracketInfo = getInsuranceDeduction(salary);
@@ -95,14 +97,15 @@ document.addEventListener("DOMContentLoaded", () => {
     // 計算最終實領薪資
     const netSalary = salary - deduction + Math.round(totalExactPay);
 
-    // 顯示結果
-    hourlyWageEl.textContent = `NT$ ${Math.round(hourlyWage)}`;
-
     // 顯示勞健保扣除額
     insuranceDeductionEl.textContent = `- NT$ ${deduction.toLocaleString()}`;
 
     // 顯示精確的小數加班費結果
     overtimePayExactEl.textContent = `+ NT$ ${totalExactPay.toFixed(2)}`;
+    document.getElementById("overtime-tier1-desc").textContent =
+      `1~120分: 每分鐘 $${tier1RatePerMin.toFixed(2)} (共 ${totalTier1Mins} 分鐘)`;
+    document.getElementById("overtime-tier2-desc").textContent =
+      `121~240分: 每分鐘 $${tier2RatePerMin.toFixed(2)} (共 ${totalTier2Mins} 分鐘)`;
 
     // 顯示最終實領薪資
     netSalaryRoundedEl.textContent = `NT$ ${netSalary.toLocaleString()}`;
