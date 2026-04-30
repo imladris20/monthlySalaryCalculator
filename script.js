@@ -1,10 +1,9 @@
 document.addEventListener("DOMContentLoaded", () => {
   // 設定目前的計算模式
-  localStorage.setItem('calculatorMode', 'monthly');
+  localStorage.setItem("calculatorMode", "monthly");
 
   // 動態渲染級距表 (預設月薪制)
   renderInsuranceTable(INSURANCE_BRACKETS);
-
 
   const form = document.getElementById("calculator-form");
   const resultSection = document.getElementById("result-section");
@@ -30,9 +29,11 @@ document.addEventListener("DOMContentLoaded", () => {
     const bracketInfo = getInsuranceDeduction(salary);
     salaryInsurancePreview.innerHTML = `
       <div class="mb-1">平日時薪: $${hourlyWage}元</div>
-      <div class="mb-1">對應級距: $${bracketInfo.salary.toLocaleString()}</div>
-      <div>勞保自付: $${bracketInfo.labor.toLocaleString()}，健保自付: $${bracketInfo.health.toLocaleString()}，雇主提撥勞退: $${bracketInfo.pension.toLocaleString()}</div>
+      <div class="mb-1">勞保自付: $${bracketInfo.labor.toLocaleString()}，健保自付: $${bracketInfo.health.toLocaleString()}</div>
     `;
+
+    document.getElementById("bracket-label").textContent =
+      `您的級距：NT$ ${bracketInfo.salary.toLocaleString()}`;
 
     // Highlight the bracket in the modal table
     highlightBracketInTable(bracketInfo.salary);
@@ -113,6 +114,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // 顯示勞健保扣除額
     insuranceDeductionEl.textContent = `- NT$ ${deduction.toLocaleString()}`;
+    document.getElementById("bracket-label").textContent =
+      `您的級距：NT$ ${bracketInfo.salary.toLocaleString()}`;
 
     // 顯示精確的小數加班費結果
     overtimePayExactEl.textContent = `+ NT$ ${totalExactPay.toFixed(2)}`;
@@ -127,14 +130,9 @@ document.addEventListener("DOMContentLoaded", () => {
     // 顯示雇主提撥勞退
     employerPensionEl.textContent = `NT$ ${bracketInfo.pension.toLocaleString()}`;
 
-    // 顯示結果區塊
-    resultSection.classList.remove("hidden");
-
     // 重新觸發淡入動畫
     resultSection.classList.remove("animate-fade-in");
     void resultSection.offsetWidth; // 觸發重繪 (reflow)
     resultSection.classList.add("animate-fade-in");
   });
 });
-
-

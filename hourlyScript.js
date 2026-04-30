@@ -1,6 +1,6 @@
 document.addEventListener("DOMContentLoaded", () => {
   // 設定目前的計算模式
-  localStorage.setItem('calculatorMode', 'hourly');
+  localStorage.setItem("calculatorMode", "hourly");
 
   // 動態渲染級距表 (部分工時 + 一般級距)
   const allBrackets = [...PART_TIME_INSURANCE_BRACKETS, ...INSURANCE_BRACKETS];
@@ -12,10 +12,12 @@ document.addEventListener("DOMContentLoaded", () => {
   const netSalaryRoundedEl = document.getElementById("net-salary-rounded");
   const employerPensionEl = document.getElementById("employer-pension");
   const grossSalaryEl = document.getElementById("gross-salary");
-  
+
   const hourlyWageInput = document.getElementById("hourly-wage");
   const totalHoursInput = document.getElementById("total-hours");
-  const salaryInsurancePreview = document.getElementById("salary-insurance-preview");
+  const salaryInsurancePreview = document.getElementById(
+    "salary-insurance-preview",
+  );
   const recordsContainer = document.getElementById("records-container");
   const addRecordBtn = document.getElementById("add-record-btn");
   const overtimePayExactEl = document.getElementById("overtime-pay-exact");
@@ -23,20 +25,27 @@ document.addEventListener("DOMContentLoaded", () => {
   function updatePreview() {
     const hourlyWage = parseFloat(hourlyWageInput.value);
     const totalHours = parseFloat(totalHoursInput.value);
-    
-    if (isNaN(hourlyWage) || isNaN(totalHours) || hourlyWage <= 0 || totalHours <= 0) {
+
+    if (
+      isNaN(hourlyWage) ||
+      isNaN(totalHours) ||
+      hourlyWage <= 0 ||
+      totalHours <= 0
+    ) {
       salaryInsurancePreview.textContent = "";
       return;
     }
 
     const estimatedSalary = hourlyWage * totalHours;
     const bracketInfo = getInsuranceDeduction(estimatedSalary, true);
-    
+
     salaryInsurancePreview.innerHTML = `
       <div class="mb-1 text-primary font-bold">預估月薪 (不含加班): $${Math.round(estimatedSalary).toLocaleString()}元</div>
-      <div class="mb-1">對應級距: $${bracketInfo.salary.toLocaleString()}</div>
-      <div>勞保自付: $${bracketInfo.labor.toLocaleString()}，健保自付: $${bracketInfo.health.toLocaleString()}，雇主提撥勞退: $${bracketInfo.pension.toLocaleString()}</div>
+      <div class="mb-1">勞保自付: $${bracketInfo.labor.toLocaleString()}，健保自付: $${bracketInfo.health.toLocaleString()}</div>
     `;
+
+    document.getElementById("bracket-label").textContent =
+      `您的級距：NT$ ${bracketInfo.salary.toLocaleString()}`;
 
     highlightBracketInTable(bracketInfo.salary);
   }
@@ -81,12 +90,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const hourlyWage = parseFloat(hourlyWageInput.value);
     const totalHours = parseFloat(totalHoursInput.value);
-    
+
     if (isNaN(hourlyWage) || isNaN(totalHours)) return;
 
     // 基本薪資 (不含加班)
     const baseSalary = hourlyWage * totalHours;
-    
+
     // 計算加班費
     const tier1RatePerMin = (hourlyWage * (4 / 3)) / 60;
     const tier2RatePerMin = (hourlyWage * (5 / 3)) / 60;
@@ -108,7 +117,8 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
 
-    totalOvertimePay = totalTier1Mins * tier1RatePerMin + totalTier2Mins * tier2RatePerMin;
+    totalOvertimePay =
+      totalTier1Mins * tier1RatePerMin + totalTier2Mins * tier2RatePerMin;
 
     const grossSalaryTotal = Math.round(baseSalary + totalOvertimePay);
     const bracketInfo = getInsuranceDeduction(grossSalaryTotal, true);
@@ -117,8 +127,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // 顯示數值
     insuranceDeductionEl.textContent = `- NT$ ${deduction.toLocaleString()}`;
+    document.getElementById("bracket-label").textContent =
+      `您的級距：NT$ ${bracketInfo.salary.toLocaleString()}`;
     overtimePayExactEl.textContent = `+ NT$ ${totalOvertimePay.toFixed(2)}`;
-    
+
     document.getElementById("overtime-tier1-desc").textContent =
       `1~120分: 每分鐘 $${tier1RatePerMin.toFixed(2)} (共 ${totalTier1Mins} 分鐘)`;
     document.getElementById("overtime-tier2-desc").textContent =
@@ -127,8 +139,6 @@ document.addEventListener("DOMContentLoaded", () => {
     netSalaryRoundedEl.textContent = `NT$ ${netSalary.toLocaleString()}`;
     employerPensionEl.textContent = `NT$ ${bracketInfo.pension.toLocaleString()}`;
 
-    // 顯示結果區塊
-    resultSection.classList.remove("hidden");
     resultSection.classList.remove("animate-fade-in");
     void resultSection.offsetWidth;
     resultSection.classList.add("animate-fade-in");

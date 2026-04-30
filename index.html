@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>實領月薪計算機</title>
+    <title>實領月薪計算機（月薪制）</title>
 
     <!-- 引入 DaisyUI (必須在 Tailwind 之前) -->
     <link
@@ -23,9 +23,9 @@
     <link href="style.css" rel="stylesheet" />
     <script>
       // 檢查使用者偏好模式
-      const mode = localStorage.getItem('calculatorMode');
-      if (mode === 'hourly' && !window.location.href.includes('hourly.html')) {
-        window.location.href = 'hourly.html';
+      const mode = localStorage.getItem("calculatorMode");
+      if (mode === "hourly" && !window.location.href.includes("hourly.html")) {
+        window.location.href = "hourly.html";
       }
     </script>
   </head>
@@ -33,12 +33,17 @@
     class="min-h-screen bg-base-200 flex items-start justify-center p-4 pt-10 md:p-8 font-sans transition-colors duration-300"
   >
     <div
-      class="card w-full max-w-lg bg-base-100 shadow-xl border border-base-300"
+      class="card w-full max-w-lg lg:max-w-5xl bg-base-100 shadow-xl border border-base-300 transition-all duration-500"
     >
       <!-- 導航標籤 -->
       <div class="tabs tabs-boxed rounded-b-none bg-base-300/50">
         <a class="tab tab-active flex-1 font-bold">月薪制勞工</a>
-        <a href="hourly.html" class="tab flex-1" onclick="localStorage.setItem('calculatorMode', 'hourly')">時薪制勞工</a>
+        <a
+          href="hourly.html"
+          class="tab flex-1"
+          onclick="localStorage.setItem('calculatorMode', 'hourly')"
+          >時薪制勞工</a
+        >
       </div>
 
       <div class="card-body">
@@ -62,209 +67,230 @@
           實領薪資計算機
         </h2>
 
-        <form id="calculator-form" class="space-y-4">
-          <!-- 月薪輸入 -->
-          <div class="form-control">
-            <label class="label">
-              <span class="label-text font-medium">月薪 (新台幣)</span>
-            </label>
-            <label
-              class="input input-bordered flex items-center gap-2 focus-within:outline-primary"
-            >
-              $
-              <input
-                type="number"
-                id="monthly-salary"
-                class="grow"
-                placeholder="例如: 40000"
-                required
-                min="1"
-              />
-            </label>
-            <div
-              id="salary-insurance-preview"
-              class="text-xs text-base-content/60 mt-2 min-h-[1rem]"
-            ></div>
-          </div>
-
-          <!-- 加班紀錄列表 -->
-          <div class="form-control">
-            <div class="flex justify-between items-end mb-2">
-              <label class="label p-0">
-                <span class="label-text font-medium">每日加班紀錄 (分鐘)</span>
-              </label>
-              <button
-                type="button"
-                id="add-record-btn"
-                class="btn btn-sm btn-outline btn-secondary"
-              >
-                + 新增一日
-              </button>
-            </div>
-
-            <div id="records-container" class="space-y-3">
-              <!-- 動態插入的輸入列 -->
-              <div class="flex items-center gap-2 record-row">
-                <input
-                  type="number"
-                  class="input input-bordered w-full focus:outline-primary overtime-minutes"
-                  placeholder="例如: 120"
-                  step="1"
-                  min="0"
-                  max="240"
-                />
-                <button
-                  type="button"
-                  class="btn btn-square btn-error btn-outline delete-btn"
-                  title="刪除"
-                  disabled
+        <div class="flex flex-col lg:flex-row gap-0 lg:gap-4">
+          <!-- 左側：輸入表單 -->
+          <div class="flex-1">
+            <form id="calculator-form" class="space-y-4">
+              <!-- 月薪輸入 -->
+              <div class="form-control">
+                <label class="label">
+                  <span class="label-text font-medium">月薪 (新台幣)</span>
+                </label>
+                <label
+                  class="input input-bordered flex items-center gap-2 mt-2 focus-within:outline-primary"
                 >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="h-5 w-5"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
+                  $
+                  <input
+                    type="number"
+                    id="monthly-salary"
+                    class="grow"
+                    placeholder="例如: 40000"
+                    required
+                    min="1"
+                  />
+                </label>
+                <div
+                  id="salary-insurance-preview"
+                  class="text-xs text-base-content/60 mt-2 min-h-[1rem]"
+                ></div>
+              </div>
+
+              <!-- 加班紀錄列表 -->
+              <div class="form-control">
+                <div class="flex justify-between items-end mb-2">
+                  <label class="label p-0">
+                    <span class="label-text font-medium"
+                      >每日加班紀錄 (分鐘)</span
+                    >
+                  </label>
+                  <button
+                    type="button"
+                    id="add-record-btn"
+                    class="btn btn-sm btn-outline btn-secondary"
                   >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M6 18L18 6M6 6l12 12"
+                    + 新增一日
+                  </button>
+                </div>
+
+                <div id="records-container" class="space-y-3">
+                  <!-- 動態插入的輸入列 -->
+                  <div class="flex items-center gap-2 record-row">
+                    <input
+                      type="number"
+                      class="input input-bordered w-full focus:outline-primary overtime-minutes"
+                      placeholder="例如: 120"
+                      step="1"
+                      min="0"
+                      max="240"
                     />
-                  </svg>
+                    <button
+                      type="button"
+                      class="btn btn-square btn-error btn-outline delete-btn"
+                      title="刪除"
+                      disabled
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        class="h-5 w-5"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M6 18L18 6M6 6l12 12"
+                        />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card-actions mt-6">
+                <button type="submit" class="btn btn-primary w-full text-lg">
+                  開始計算
                 </button>
               </div>
-            </div>
+            </form>
           </div>
 
-          <div class="card-actions mt-6">
-            <button type="submit" class="btn btn-primary w-full text-lg">
-              開始計算
-            </button>
-          </div>
-        </form>
-
-        <div class="divider my-6">計算結果</div>
-
-        <!-- 結果顯示區塊 -->
-        <div id="result-section" class="hidden space-y-4 animate-fade-in">
-          <!-- 扣除額與加班費細項 -->
-          <div
-            class="stats stats-vertical sm:stats-horizontal shadow w-full bg-base-200 mt-2"
-          >
-            <div class="stat place-items-center py-3 sm:py-4">
-              <div class="stat-title text-base-content/70 text-sm sm:text-base">
-                勞健保扣除額
-              </div>
-              <div
-                class="stat-value text-xl sm:text-2xl text-error"
-                id="insurance-deduction"
-              >
-                - NT$ 0
-              </div>
-              <div class="stat-desc text-xs mt-1" id="insurance-desc">
-                依<a
-                  href="#"
-                  onclick="
-                    bracket_modal.showModal();
-                    scrollToHighlightedRow();
-                  "
-                  class="link link-primary"
-                  >級距表</a
-                >扣除
-              </div>
-            </div>
-            <div class="stat place-items-center py-3 sm:py-4">
-              <div class="stat-title text-base-content/70 text-sm sm:text-base">
-                總加班費
-              </div>
-              <div
-                class="stat-value text-xl sm:text-2xl text-success"
-                id="overtime-pay-exact"
-              >
-                + NT$ 0.00
-              </div>
-              <div
-                class="stat-desc text-xs mt-1"
-                id="overtime-tier1-desc"
-              ></div>
-              <div class="stat-desc text-xs" id="overtime-tier2-desc"></div>
-            </div>
+          <!-- 分隔線 -->
+          <div class="divider lg:divider-horizontal my-6 lg:my-0 lg:mx-12">
+            計算結果
           </div>
 
-          <!-- 最終實領薪資 -->
-          <div
-            class="alert alert-success shadow-lg mt-4 flex flex-col items-start gap-1 bg-gradient-to-r from-success/20 to-success/40 border-none p-4 sm:p-6"
-          >
-            <div class="flex items-center gap-2">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="stroke-current shrink-0 h-6 w-6 text-success-content"
-                fill="none"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
-              <h3 class="font-bold text-base sm:text-lg text-success-content">
-                最終實領薪資
-              </h3>
-            </div>
-            <div class="w-full text-success-content">
-              <div class="text-xs sm:text-sm opacity-80 mt-1">
-                公式：帳面薪資 - 扣除額 + 加班費
+          <!-- 右側：結果顯示區塊 -->
+          <div id="result-section" class="flex-1 space-y-4 animate-fade-in">
+            <!-- 扣除額與加班費細項 -->
+            <div
+              class="stats stats-vertical sm:stats-horizontal shadow w-full bg-base-200"
+            >
+              <div class="stat place-items-center py-3 sm:py-4">
+                <div
+                  class="stat-title text-base-content/70 text-sm sm:text-base"
+                >
+                  勞健保扣除額
+                </div>
+                <div
+                  class="stat-value text-xl sm:text-2xl text-error"
+                  id="insurance-deduction"
+                >
+                  - NT$ 0
+                </div>
+                <div class="stat-desc text-xs mt-1" id="insurance-desc">
+                  依<a
+                    href="#"
+                    onclick="
+                      bracket_modal.showModal();
+                      scrollToHighlightedRow();
+                    "
+                    class="link link-primary"
+                    >級距表</a
+                  >扣除
+                  <div id="bracket-label" class="mt-1 opacity-70"></div>
+                </div>
               </div>
-              <div
-                class="text-4xl sm:text-5xl font-black mt-2 tracking-tight"
-                id="net-salary-rounded"
-              >
-                NT$ 0
+              <div class="stat place-items-center py-3 sm:py-4">
+                <div
+                  class="stat-title text-base-content/70 text-sm sm:text-base"
+                >
+                  總加班費
+                </div>
+                <div
+                  class="stat-value text-xl sm:text-2xl text-success"
+                  id="overtime-pay-exact"
+                >
+                  + NT$ 0.00
+                </div>
+                <div
+                  class="stat-desc text-xs mt-1"
+                  id="overtime-tier1-desc"
+                ></div>
+                <div class="stat-desc text-xs" id="overtime-tier2-desc"></div>
               </div>
             </div>
-          </div>
 
-          <!-- 雇主提撥勞退 -->
-          <div
-            class="alert shadow-sm mt-4 flex flex-col items-start gap-1 bg-info/10 text-info border-none p-4 sm:p-6"
-          >
-            <div class="flex items-center gap-2">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                class="stroke-current shrink-0 w-6 h-6"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                ></path>
-              </svg>
-              <h3 class="font-bold text-base sm:text-lg">雇主提撥勞退 (6%)</h3>
-            </div>
-            <div class="w-full">
-              <div
-                class="text-2xl sm:text-3xl font-black mt-1"
-                id="employer-pension"
-              >
-                NT$ 0
+            <!-- 最終實領薪資 -->
+            <div
+              class="alert alert-success shadow-lg flex flex-col items-start gap-1 bg-gradient-to-r from-success/20 to-success/40 border-none p-4 sm:p-6"
+            >
+              <div class="flex items-center gap-2">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="stroke-current shrink-0 h-6 w-6 text-success-content"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+                <h3 class="font-bold text-base sm:text-lg text-success-content">
+                  最終實領薪資
+                </h3>
               </div>
-              <div class="text-xs opacity-80 mt-1" id="employer-pension-desc">
-                這筆錢會由雇主全額負擔並存入您的勞退個人專戶，不包含在上方實領薪資內。
+              <div class="w-full text-success-content">
+                <div class="text-xs sm:text-sm opacity-80 mt-1">
+                  公式：帳面薪資 - 扣除額 + 加班費
+                </div>
+                <div
+                  class="text-4xl sm:text-5xl font-black mt-2 tracking-tight"
+                  id="net-salary-rounded"
+                >
+                  NT$ 0
+                </div>
               </div>
             </div>
-          </div>
 
-          <p class="text-xs text-base-content/60 text-center mt-4">
-            *
-            計算結果僅供參考，實際薪資發放依各公司計算方式及最新勞基法規定為準。
-          </p>
+            <!-- 雇主提撥勞退 -->
+            <div
+              class="alert shadow-sm flex flex-col items-start gap-1 bg-info/15 text-base-content/80 border-none p-4 sm:p-6"
+            >
+              <div class="flex items-center gap-2">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  class="stroke-current shrink-0 w-6 h-6"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  ></path>
+                </svg>
+                <h3 class="font-bold text-base sm:text-lg">
+                  雇主提撥勞退 (6%)
+                </h3>
+              </div>
+              <div class="w-full">
+                <div
+                  class="text-2xl sm:text-3xl font-black mt-1"
+                  id="employer-pension"
+                >
+                  NT$ 0
+                </div>
+                <div class="text-xs opacity-80 mt-1" id="employer-pension-desc">
+                  勞退是由雇主全額負擔、另外提撥您的勞退級距 6%
+                  的額度並存入您的勞退個人專戶，在退休時可以領出。
+                </div>
+                <div class="text-xs opacity-80 mt-1">
+                  因此，這筆錢算是您的收入，雖然並非實領薪資，但也不會從您的薪資中扣除。
+                </div>
+              </div>
+            </div>
+
+            <p class="text-xs text-base-content/60 text-center mt-4">
+              *
+              計算結果僅供參考，實際薪資發放依各公司計算方式及最新勞基法規定為準。
+            </p>
+          </div>
         </div>
       </div>
     </div>
