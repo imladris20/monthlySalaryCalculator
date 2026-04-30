@@ -1,4 +1,8 @@
 document.addEventListener("DOMContentLoaded", () => {
+  // 動態渲染級距表
+  renderInsuranceTable();
+
+
   const form = document.getElementById("calculator-form");
   const resultSection = document.getElementById("result-section");
   const overtimePayExactEl = document.getElementById("overtime-pay-exact");
@@ -178,3 +182,25 @@ window.scrollToHighlightedRow = function () {
     }
   }, 100);
 };
+
+/**
+ * 動態渲染級距表內容
+ */
+function renderInsuranceTable() {
+  const tbody = document.getElementById("bracket_tbody");
+  if (!tbody) return;
+
+  tbody.innerHTML = INSURANCE_BRACKETS.map((b) => `
+    <tr>
+      <td>${b.salary.toLocaleString()}</td>
+      <td>${b.employerLabor.toLocaleString()}</td>
+      <td>${b.employerHealth.toLocaleString()}</td>
+      <td>${b.pension.toLocaleString()}</td>
+      <td>${b.employerTotal.toLocaleString()}</td>
+      <td>${b.labor.toLocaleString()}</td>
+      <td>${b.health.toLocaleString()}</td>
+      <td>${b.total.toLocaleString()}</td>
+    </tr>
+  `).join("");
+}
+
