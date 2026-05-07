@@ -123,12 +123,37 @@ document.addEventListener("DOMContentLoaded", () => {
     const grossSalaryTotal = Math.round(baseSalary + totalOvertimePay);
     const bracketInfo = getInsuranceDeduction(grossSalaryTotal, true);
     const deduction = bracketInfo.total;
-    const netSalary = grossSalaryTotal - deduction;
+
+    // 取得請假時數
+    const sickLeaveHours =
+      parseFloat(document.getElementById("sick-leave-hours").value) || 0;
+    const personalLeaveHours =
+      parseFloat(document.getElementById("personal-leave-hours").value) || 0;
+
+    // 計算請假扣款 (病假半薪，事假無薪)
+    const sickLeaveDeduction = sickLeaveHours * (hourlyWage * 0.5);
+    const personalLeaveDeduction = personalLeaveHours * hourlyWage;
+    const leaveDeductionTotal = Math.round(
+      sickLeaveDeduction + personalLeaveDeduction,
+    );
+
+    const netSalary = grossSalaryTotal - deduction - leaveDeductionTotal;
 
     // 顯示數值
     insuranceDeductionEl.textContent = `- NT$ ${deduction.toLocaleString()}`;
     document.getElementById("bracket-label").textContent =
       `您的級距：NT$ ${bracketInfo.salary.toLocaleString()}`;
+
+    // 顯示請假扣款
+    document.getElementById("leave-deduction").textContent =
+      `- NT$ ${leaveDeductionTotal.toLocaleString()}`;
+    const leaveDescText = [];
+    if (sickLeaveHours > 0) leaveDescText.push(`病假 ${sickLeaveHours}h`);
+    if (personalLeaveHours > 0)
+      leaveDescText.push(`事假 ${personalLeaveHours}h`);
+    document.getElementById("leave-desc").textContent =
+      leaveDescText.length > 0 ? leaveDescText.join("、") : "";
+
     overtimePayExactEl.textContent = `+ NT$ ${totalOvertimePay.toFixed(2)}`;
 
     document.getElementById("overtime-tier1-desc").textContent =
