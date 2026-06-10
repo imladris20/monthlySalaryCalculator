@@ -233,9 +233,16 @@
                 </div>
               </div>
 
-              <div class="card-actions mt-6">
-                <button type="submit" class="btn btn-primary w-full text-lg">
+              <div class="card-actions mt-6 flex-nowrap gap-2">
+                <button type="submit" class="btn btn-primary flex-1 text-lg">
                   開始計算
+                </button>
+                <button
+                  type="button"
+                  id="reset-btn"
+                  class="btn btn-outline text-lg"
+                >
+                  清除
                 </button>
               </div>
             </form>
@@ -301,7 +308,7 @@
                   class="stat-value text-xl sm:text-2xl text-success"
                   id="overtime-pay-exact"
                 >
-                  + NT$ 0.00
+                  + NT$ 0
                 </div>
                 <div
                   class="stat-desc text-xs mt-1"

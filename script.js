@@ -230,4 +230,40 @@ document.addEventListener("DOMContentLoaded", () => {
     void resultSection.offsetWidth; // 觸發重繪 (reflow)
     resultSection.classList.add("animate-fade-in");
   });
+
+  // 清除：重置所有輸入與計算結果回到初始狀態
+  const resetBtn = document.getElementById("reset-btn");
+  resetBtn.addEventListener("click", () => {
+    // 清空月薪、伙食費恢復預設
+    monthlySalaryInput.value = "";
+    document.getElementById("meal-allowance").value = "3000";
+    salaryInsurancePreview.textContent = "";
+
+    // 動態列表只保留第一列並清空其內容
+    recordsContainer.querySelectorAll(".record-row").forEach((row, i) => {
+      if (i === 0) row.querySelector(".overtime-minutes").value = "";
+      else row.remove();
+    });
+    leavesContainer.querySelectorAll(".leave-row").forEach((row, i) => {
+      if (i === 0) {
+        row.querySelector(".leave-hours").value = "";
+        row.querySelector(".leave-type").value = "sick";
+      } else {
+        row.remove();
+      }
+    });
+    updateDeleteButtons();
+    updateLeaveDeleteButtons();
+
+    // 結果區歸零
+    insuranceDeductionEl.textContent = "- NT$ 0";
+    document.getElementById("leave-deduction").textContent = "- NT$ 0";
+    document.getElementById("leave-desc").textContent = "";
+    overtimePayExactEl.textContent = "+ NT$ 0";
+    document.getElementById("overtime-tier1-desc").textContent = "";
+    document.getElementById("overtime-tier2-desc").textContent = "";
+    document.getElementById("bracket-label").textContent = "";
+    netSalaryRoundedEl.textContent = "NT$ 0";
+    employerPensionEl.textContent = "NT$ 0";
+  });
 });
