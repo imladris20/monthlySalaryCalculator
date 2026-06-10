@@ -20,6 +20,8 @@ document.addEventListener("DOMContentLoaded", () => {
   );
   const recordsContainer = document.getElementById("records-container");
   const addRecordBtn = document.getElementById("add-record-btn");
+  const leavesContainer = document.getElementById("leaves-container");
+  const addLeaveBtn = document.getElementById("add-leave-btn");
   const overtimePayExactEl = document.getElementById("overtime-pay-exact");
 
   function updatePreview() {
@@ -85,6 +87,45 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+  // 動態新增請假列
+  addLeaveBtn.addEventListener("click", () => {
+    const row = document.createElement("div");
+    row.className = "flex items-center gap-2 leave-row";
+    row.innerHTML = `
+            <select class="select select-bordered focus:outline-primary leave-type">
+                <option value="sick">病假 (半薪)</option>
+                <option value="personal">事假 (無薪)</option>
+            </select>
+            <label class="input input-bordered flex items-center gap-2 grow focus-within:outline-primary">
+                <input type="number" class="grow leave-hours" placeholder="0" min="0" step="0.5" />
+                <span class="text-base-content/50">小時</span>
+            </label>
+            <button type="button" class="btn btn-square btn-error btn-outline delete-leave-btn" title="刪除">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
+        `;
+    leavesContainer.appendChild(row);
+    updateLeaveDeleteButtons();
+  });
+
+  // 刪除請假列 (使用事件委派)
+  leavesContainer.addEventListener("click", (e) => {
+    const deleteBtn = e.target.closest(".delete-leave-btn");
+    if (deleteBtn) {
+      deleteBtn.closest(".leave-row").remove();
+      updateLeaveDeleteButtons();
+    }
+  });
+
+  function updateLeaveDeleteButtons() {
+    const deleteBtns = leavesContainer.querySelectorAll(".delete-leave-btn");
+    if (deleteBtns.length <= 1) {
+      deleteBtns.forEach((btn) => (btn.disabled = true));
+    } else {
+      deleteBtns.forEach((btn) => (btn.disabled = false));
+    }
+  }
+
   form.addEventListener("submit", (e) => {
     e.preventDefault();
 
@@ -97,8 +138,13 @@ document.addEventListener("DOMContentLoaded", () => {
     const baseSalary = hourlyWage * totalHours;
 
     // 計算加班費
-    const tier1RatePerMin = (hourlyWage * (4 / 3)) / 60;
-    const tier2RatePerMin = (hourlyWage * (5 / 3)) / 60;
+    // Labor Standards Act overtime multipliers. Payroll systems use the
+    // rounded statutory rates 1.34 / 1.67 (not the exact fractions 4/3, 5/3),
+    // so we match that to align with real pay slips.
+    const OT_TIER1_MULTIPLIER = 1.34; // first 2 hours per day
+    const OT_TIER2_MULTIPLIER = 1.67; // beyond 2 hours per day
+    const tier1RatePerMin = (hourlyWage * OT_TIER1_MULTIPLIER) / 60;
+    const tier2RatePerMin = (hourlyWage * OT_TIER2_MULTIPLIER) / 60;
 
     let totalOvertimePay = 0;
     let totalTier1Mins = 0;
@@ -119,23 +165,33 @@ document.addEventListener("DOMContentLoaded", () => {
 
     totalOvertimePay =
       totalTier1Mins * tier1RatePerMin + totalTier2Mins * tier2RatePerMin;
+    // Pay slips truncate the overtime total down to whole dollars (floor),
+    // not round-half-up.
+    const overtimePayRounded = Math.floor(totalOvertimePay);
 
-    const grossSalaryTotal = Math.round(baseSalary + totalOvertimePay);
+    const grossSalaryTotal = Math.round(baseSalary) + overtimePayRounded;
     const bracketInfo = getInsuranceDeduction(grossSalaryTotal, true);
     const deduction = bracketInfo.total;
 
-    // 取得請假時數
-    const sickLeaveHours =
-      parseFloat(document.getElementById("sick-leave-hours").value) || 0;
-    const personalLeaveHours =
-      parseFloat(document.getElementById("personal-leave-hours").value) || 0;
+    // 逐筆計算請假扣款 (病假半薪，事假無薪)。每筆請假以時薪計算後
+    // 各自四捨五入再加總，與薪資單逐筆計算的算法一致。
+    let leaveDeductionTotal = 0;
+    let totalSickHours = 0;
+    let totalPersonalHours = 0;
+    const leaveRows = leavesContainer.querySelectorAll(".leave-row");
 
-    // 計算請假扣款 (病假半薪，事假無薪)
-    const sickLeaveDeduction = sickLeaveHours * (hourlyWage * 0.5);
-    const personalLeaveDeduction = personalLeaveHours * hourlyWage;
-    const leaveDeductionTotal = Math.round(
-      sickLeaveDeduction + personalLeaveDeduction,
-    );
+    leaveRows.forEach((row) => {
+      const hours = parseFloat(row.querySelector(".leave-hours").value) || 0;
+      if (hours <= 0) return;
+
+      const type = row.querySelector(".leave-type").value;
+      // 病假給半薪 (扣半薪)，事假無薪 (扣全薪)
+      const payRatio = type === "sick" ? 0.5 : 1;
+      leaveDeductionTotal += Math.round(hourlyWage * hours * payRatio);
+
+      if (type === "sick") totalSickHours += hours;
+      else totalPersonalHours += hours;
+    });
 
     const netSalary = grossSalaryTotal - deduction - leaveDeductionTotal;
 
@@ -148,13 +204,14 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("leave-deduction").textContent =
       `- NT$ ${leaveDeductionTotal.toLocaleString()}`;
     const leaveDescText = [];
-    if (sickLeaveHours > 0) leaveDescText.push(`病假 ${sickLeaveHours}h`);
-    if (personalLeaveHours > 0)
-      leaveDescText.push(`事假 ${personalLeaveHours}h`);
+    if (totalSickHours > 0) leaveDescText.push(`病假 ${totalSickHours}h`);
+    if (totalPersonalHours > 0)
+      leaveDescText.push(`事假 ${totalPersonalHours}h`);
     document.getElementById("leave-desc").textContent =
       leaveDescText.length > 0 ? leaveDescText.join("、") : "";
 
-    overtimePayExactEl.textContent = `+ NT$ ${totalOvertimePay.toFixed(2)}`;
+    // 顯示加班費結果 (與帳面薪資一致，無條件捨去到整數元)
+    overtimePayExactEl.textContent = `+ NT$ ${overtimePayRounded.toLocaleString()}`;
 
     document.getElementById("overtime-tier1-desc").textContent =
       `1~120分: 每分鐘 $${tier1RatePerMin.toFixed(2)} (共 ${totalTier1Mins} 分鐘)`;
