@@ -13,6 +13,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const employerPensionEl = document.getElementById("employer-pension");
   const recordsContainer = document.getElementById("records-container");
   const addRecordBtn = document.getElementById("add-record-btn");
+  const leavesContainer = document.getElementById("leaves-container");
+  const addLeaveBtn = document.getElementById("add-leave-btn");
   const monthlySalaryInput = document.getElementById("monthly-salary");
   const salaryInsurancePreview = document.getElementById(
     "salary-insurance-preview",
@@ -72,6 +74,46 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+  // 動態新增請假列
+  addLeaveBtn.addEventListener("click", () => {
+    const row = document.createElement("div");
+    row.className = "flex items-center gap-2 leave-row";
+    row.innerHTML = `
+            <select class="select select-bordered focus:outline-primary leave-type">
+                <option value="sick">病假 (半薪)</option>
+                <option value="personal">事假 (無薪)</option>
+            </select>
+            <label class="input input-bordered flex items-center gap-2 grow focus-within:outline-primary">
+                <input type="number" class="grow leave-hours" placeholder="0" min="0" step="0.5" />
+                <span class="text-base-content/50">小時</span>
+            </label>
+            <button type="button" class="btn btn-square btn-error btn-outline delete-leave-btn" title="刪除">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
+        `;
+    leavesContainer.appendChild(row);
+    updateLeaveDeleteButtons();
+  });
+
+  // 刪除請假列 (使用事件委派)
+  leavesContainer.addEventListener("click", (e) => {
+    const deleteBtn = e.target.closest(".delete-leave-btn");
+    if (deleteBtn) {
+      deleteBtn.closest(".leave-row").remove();
+      updateLeaveDeleteButtons();
+    }
+  });
+
+  function updateLeaveDeleteButtons() {
+    const deleteBtns = leavesContainer.querySelectorAll(".delete-leave-btn");
+    // 如果只剩一列，則禁用刪除按鈕
+    if (deleteBtns.length <= 1) {
+      deleteBtns.forEach((btn) => (btn.disabled = true));
+    } else {
+      deleteBtns.forEach((btn) => (btn.disabled = false));
+    }
+  }
+
   form.addEventListener("submit", (e) => {
     e.preventDefault();
 
@@ -117,18 +159,39 @@ document.addEventListener("DOMContentLoaded", () => {
     const bracketInfo = getInsuranceDeduction(salary, false);
     const deduction = bracketInfo.total;
 
-    // 取得請假時數
-    const sickLeaveHours =
-      parseFloat(document.getElementById("sick-leave-hours").value) || 0;
-    const personalLeaveHours =
-      parseFloat(document.getElementById("personal-leave-hours").value) || 0;
+    // 取得伙食費 (免稅額)，並把月薪拆成課稅 / 非課稅兩部分。
+    // Payroll splits the salary into a taxable portion (salary - meal
+    // allowance) and a non-taxable portion (meal allowance), then computes
+    // each leave deduction on both portions separately and rounds each.
+    const mealAllowance =
+      parseFloat(document.getElementById("meal-allowance").value) || 0;
+    const taxableSalary = salary - mealAllowance;
+    const taxableHourlyWage = taxableSalary / 240;
+    const nonTaxableHourlyWage = mealAllowance / 240;
 
-    // 計算請假扣款 (病假半薪，事假無薪)
-    const sickLeaveDeduction = sickLeaveHours * (hourlyWage * 0.5);
-    const personalLeaveDeduction = personalLeaveHours * hourlyWage;
-    const leaveDeductionTotal = Math.round(
-      sickLeaveDeduction + personalLeaveDeduction,
-    );
+    // 逐筆計算請假扣款 (病假半薪，事假無薪)。每筆請假分別就課稅、
+    // 非課稅各自四捨五入後再加總，與薪資單算法一致。
+    let leaveDeductionTotal = 0;
+    let totalSickHours = 0;
+    let totalPersonalHours = 0;
+    const leaveRows = leavesContainer.querySelectorAll(".leave-row");
+
+    leaveRows.forEach((row) => {
+      const hours = parseFloat(row.querySelector(".leave-hours").value) || 0;
+      if (hours <= 0) return;
+
+      const type = row.querySelector(".leave-type").value;
+      // 病假給半薪 (扣半薪)，事假無薪 (扣全薪)
+      const payRatio = type === "sick" ? 0.5 : 1;
+      const weightedHours = hours * payRatio;
+
+      const taxablePart = Math.round(taxableHourlyWage * weightedHours);
+      const nonTaxablePart = Math.round(nonTaxableHourlyWage * weightedHours);
+      leaveDeductionTotal += taxablePart + nonTaxablePart;
+
+      if (type === "sick") totalSickHours += hours;
+      else totalPersonalHours += hours;
+    });
 
     // 計算最終實領薪資
     const netSalary =
@@ -143,9 +206,9 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("leave-deduction").textContent =
       `- NT$ ${leaveDeductionTotal.toLocaleString()}`;
     const leaveDescText = [];
-    if (sickLeaveHours > 0) leaveDescText.push(`病假 ${sickLeaveHours}h`);
-    if (personalLeaveHours > 0)
-      leaveDescText.push(`事假 ${personalLeaveHours}h`);
+    if (totalSickHours > 0) leaveDescText.push(`病假 ${totalSickHours}h`);
+    if (totalPersonalHours > 0)
+      leaveDescText.push(`事假 ${totalPersonalHours}h`);
     document.getElementById("leave-desc").textContent =
       leaveDescText.length > 0 ? leaveDescText.join("、") : "";
 
@@ -166,5 +229,41 @@ document.addEventListener("DOMContentLoaded", () => {
     resultSection.classList.remove("animate-fade-in");
     void resultSection.offsetWidth; // 觸發重繪 (reflow)
     resultSection.classList.add("animate-fade-in");
+  });
+
+  // 清除：重置所有輸入與計算結果回到初始狀態
+  const resetBtn = document.getElementById("reset-btn");
+  resetBtn.addEventListener("click", () => {
+    // 清空月薪、伙食費恢復預設
+    monthlySalaryInput.value = "";
+    document.getElementById("meal-allowance").value = "3000";
+    salaryInsurancePreview.textContent = "";
+
+    // 動態列表只保留第一列並清空其內容
+    recordsContainer.querySelectorAll(".record-row").forEach((row, i) => {
+      if (i === 0) row.querySelector(".overtime-minutes").value = "";
+      else row.remove();
+    });
+    leavesContainer.querySelectorAll(".leave-row").forEach((row, i) => {
+      if (i === 0) {
+        row.querySelector(".leave-hours").value = "";
+        row.querySelector(".leave-type").value = "sick";
+      } else {
+        row.remove();
+      }
+    });
+    updateDeleteButtons();
+    updateLeaveDeleteButtons();
+
+    // 結果區歸零
+    insuranceDeductionEl.textContent = "- NT$ 0";
+    document.getElementById("leave-deduction").textContent = "- NT$ 0";
+    document.getElementById("leave-desc").textContent = "";
+    overtimePayExactEl.textContent = "+ NT$ 0";
+    document.getElementById("overtime-tier1-desc").textContent = "";
+    document.getElementById("overtime-tier2-desc").textContent = "";
+    document.getElementById("bracket-label").textContent = "";
+    netSalaryRoundedEl.textContent = "NT$ 0";
+    employerPensionEl.textContent = "NT$ 0";
   });
 });
