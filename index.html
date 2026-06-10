@@ -72,67 +72,108 @@
           <!-- 左側：輸入表單 -->
           <div class="flex-1">
             <form id="calculator-form" class="space-y-4">
-              <!-- 月薪輸入 -->
-              <div class="form-control">
-                <label class="label">
-                  <span class="label-text font-medium">月薪 (新台幣)</span>
-                </label>
-                <label
-                  class="input input-bordered flex items-center gap-2 mt-2 focus-within:outline-primary"
-                >
-                  $
-                  <input
-                    type="number"
-                    id="monthly-salary"
-                    class="grow"
-                    placeholder="例如: 40000"
-                    required
-                    min="1"
-                  />
-                </label>
-                <div
-                  id="salary-insurance-preview"
-                  class="text-xs text-base-content/60 mt-2 min-h-[1rem]"
-                ></div>
-              </div>
-
-              <!-- 請假時數 -->
+              <!-- 月薪 / 伙食費輸入 -->
               <div class="flex gap-4">
                 <div class="form-control flex-1">
                   <label class="label">
-                    <span class="label-text font-medium">本月病假時數</span>
+                    <span class="label-text font-medium">月薪 (新台幣)</span>
                   </label>
                   <label
-                    class="input input-bordered flex items-center gap-2 focus-within:outline-primary"
+                    class="input input-bordered flex items-center gap-2 mt-2 focus-within:outline-primary"
                   >
+                    $
                     <input
                       type="number"
-                      id="sick-leave-hours"
+                      id="monthly-salary"
                       class="grow"
-                      placeholder="0"
-                      min="0"
-                      step="0.5"
+                      placeholder="例如: 40000"
+                      required
+                      min="1"
                     />
-                    <span class="text-base-content/50">小時</span>
                   </label>
                 </div>
                 <div class="form-control flex-1">
                   <label class="label">
-                    <span class="label-text font-medium">本月事假時數</span>
+                    <span class="label-text font-medium">伙食費 (免稅額)</span>
                   </label>
                   <label
-                    class="input input-bordered flex items-center gap-2 focus-within:outline-primary"
+                    class="input input-bordered flex items-center gap-2 mt-2 focus-within:outline-primary"
                   >
+                    $
                     <input
                       type="number"
-                      id="personal-leave-hours"
+                      id="meal-allowance"
                       class="grow"
-                      placeholder="0"
+                      placeholder="例如: 3000"
+                      value="3000"
                       min="0"
-                      step="0.5"
                     />
-                    <span class="text-base-content/50">小時</span>
                   </label>
+                </div>
+              </div>
+              <div
+                id="salary-insurance-preview"
+                class="text-xs text-base-content/60 mt-2 min-h-[1rem]"
+              ></div>
+
+              <!-- 請假紀錄列表 (逐筆計算) -->
+              <div class="form-control">
+                <div class="flex justify-between items-end mb-2">
+                  <label class="label p-0">
+                    <span class="label-text font-medium">每筆請假紀錄</span>
+                  </label>
+                  <button
+                    type="button"
+                    id="add-leave-btn"
+                    class="btn btn-sm btn-outline btn-secondary"
+                  >
+                    + 新增一筆
+                  </button>
+                </div>
+
+                <div id="leaves-container" class="space-y-3">
+                  <!-- 動態插入的請假列 -->
+                  <div class="flex items-center gap-2 leave-row">
+                    <select
+                      class="select select-bordered focus:outline-primary leave-type"
+                    >
+                      <option value="sick">病假 (半薪)</option>
+                      <option value="personal">事假 (無薪)</option>
+                    </select>
+                    <label
+                      class="input input-bordered flex items-center gap-2 grow focus-within:outline-primary"
+                    >
+                      <input
+                        type="number"
+                        class="grow leave-hours"
+                        placeholder="0"
+                        min="0"
+                        step="0.5"
+                      />
+                      <span class="text-base-content/50">小時</span>
+                    </label>
+                    <button
+                      type="button"
+                      class="btn btn-square btn-error btn-outline delete-leave-btn"
+                      title="刪除"
+                      disabled
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        class="h-5 w-5"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M6 18L18 6M6 6l12 12"
+                        />
+                      </svg>
+                    </button>
+                  </div>
                 </div>
               </div>
 
