@@ -80,8 +80,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // 計算平日每小時工資 (月薪 / 240)
     const hourlyWage = salary / 240;
-    const tier1RatePerMin = (hourlyWage * (4 / 3)) / 60;
-    const tier2RatePerMin = (hourlyWage * (5 / 3)) / 60;
+    // Labor Standards Act overtime multipliers. Payroll systems use the
+    // rounded statutory rates 1.34 / 1.67 (not the exact fractions 4/3, 5/3),
+    // so we match that to align with real pay slips.
+    const OT_TIER1_MULTIPLIER = 1.34; // first 2 hours per day
+    const OT_TIER2_MULTIPLIER = 1.67; // beyond 2 hours per day
+    const tier1RatePerMin = (hourlyWage * OT_TIER1_MULTIPLIER) / 60;
+    const tier2RatePerMin = (hourlyWage * OT_TIER2_MULTIPLIER) / 60;
 
     let totalExactPay = 0;
     let totalTier1Mins = 0;
@@ -104,6 +109,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     totalExactPay =
       totalTier1Mins * tier1RatePerMin + totalTier2Mins * tier2RatePerMin;
+    // Pay slips truncate the overtime total down to whole dollars (floor),
+    // not round-half-up.
+    const overtimePayRounded = Math.floor(totalExactPay);
 
     // 取得勞健保扣除額
     const bracketInfo = getInsuranceDeduction(salary, false);
@@ -124,7 +132,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // 計算最終實領薪資
     const netSalary =
-      salary - deduction - leaveDeductionTotal + Math.round(totalExactPay);
+      salary - deduction - leaveDeductionTotal + overtimePayRounded;
 
     // 顯示勞健保扣除額
     insuranceDeductionEl.textContent = `- NT$ ${deduction.toLocaleString()}`;
@@ -141,8 +149,8 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("leave-desc").textContent =
       leaveDescText.length > 0 ? leaveDescText.join("、") : "";
 
-    // 顯示精確的小數加班費結果
-    overtimePayExactEl.textContent = `+ NT$ ${totalExactPay.toFixed(2)}`;
+    // 顯示加班費結果 (與實領一致，無條件捨去到整數元)
+    overtimePayExactEl.textContent = `+ NT$ ${overtimePayRounded.toLocaleString()}`;
     document.getElementById("overtime-tier1-desc").textContent =
       `1~120分: 每分鐘 $${tier1RatePerMin.toFixed(2)} (共 ${totalTier1Mins} 分鐘)`;
     document.getElementById("overtime-tier2-desc").textContent =
